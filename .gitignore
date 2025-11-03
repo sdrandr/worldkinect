@@ -1,0 +1,20 @@
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+*.tfplan
+terraform.tfvars
+*.backup
+*.log
+
+# macOS
+.DS_Store
+
+# Node / Apollo
+node_modules/
+npm-debug.log*
+
+# Archives
+*.zip
+*.tgz
