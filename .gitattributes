@@ -1,0 +1,19 @@
+# Normalize line endings
+* text=auto
+
+# Treat Terraform as text
+*.tf text
+*.tfvars text
+*.hcl text
+
+# Treat YAML/JSON as text
+*.yaml text
+*.yml text
+*.json text
+
+# Treat shell scripts as text with LF
+*.sh text eol=lf
+
+# Treat Dockerfiles and Jenkinsfiles as text
+Dockerfile text
+Jenkinsfile text
