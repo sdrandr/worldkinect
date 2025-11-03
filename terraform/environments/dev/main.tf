@@ -164,6 +164,11 @@ module "irsa_apollo_router" {
   depends_on = [module.eks]
   source     = "../../modules/irsa_apollo_router"
 
+  enable_github_oidc = var.enable_github_oidc
+  account_id         = var.account_id
+  github_repo        = var.github_repo
+
+
   providers = {
     aws.root   = aws.root
     kubernetes = kubernetes

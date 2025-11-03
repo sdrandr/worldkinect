@@ -15,6 +15,28 @@ variable "aws_region" {
 
 
 ########################################
+# CI/CD & OIDC Integration
+########################################
+
+variable "enable_github_oidc" {
+  description = "Enable GitHub Actions OIDC trust for this IRSA role."
+  type        = bool
+  default     = false
+}
+
+variable "account_id" {
+  description = "AWS account ID for constructing ARNs and OIDC provider URLs."
+  type        = string
+}
+
+variable "github_repo" {
+  description = "GitHub repository allowed to assume the role via OIDC (e.g., sdrandr/worldkinect)."
+  type        = string
+  default     = false
+}
+
+
+########################################
 # ☸️ EKS Cluster Connection (for both AWS + Helm)
 ########################################
 variable "eks_cluster_name" {

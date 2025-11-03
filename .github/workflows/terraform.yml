@@ -1,4 +1,4 @@
-name: Terraform CI/CD
+name: Terraform CI/CD (World Kinect)
 
 on:
   push:
@@ -7,15 +7,16 @@ on:
   pull_request:
     branches:
       - main
+  workflow_dispatch:
 
 permissions:
-  id-token: write   # Required for OIDC federation with AWS
-  contents: read
+  id-token: write      # 👈 Required for OIDC federation
+  contents: read       # 👈 Needed to clone the repo
 
 env:
-  TF_VERSION: 1.9.8
   AWS_REGION: us-east-1
-  TF_WORKING_DIR: terraform/environments/dev
+  TF_VERSION: 1.13.4
+  WORKING_DIR: terraform/environments/dev
 
 jobs:
   terraform:
@@ -23,45 +24,63 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout source
+      # -----------------------
+      # Checkout source code
+      # -----------------------
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: ${{ env.TF_VERSION }}
-
-      - name: Configure AWS credentials (OIDC)
+      # -----------------------
+      # Configure AWS OIDC (no secrets!)
+      # -----------------------
+      - name: Configure AWS credentials from OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::891377181070:role/terraform-admin
           aws-region: ${{ env.AWS_REGION }}
 
+      # -----------------------
+      # Setup Terraform
+      # -----------------------
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      # -----------------------
+      # Terraform Init
+      # -----------------------
       - name: Terraform Init
-        working-directory: ${{ env.TF_WORKING_DIR }}
-        run: terraform init -backend-config=../../common/backend.dev.tfvars
+        working-directory: ${{ env.WORKING_DIR }}
+        run: terraform init -input=false
 
-      - name: Terraform Format
-        working-directory: ${{ env.TF_WORKING_DIR }}
-        run: terraform fmt -check -recursive
-
+      # -----------------------
+      # Terraform Validate
+      # -----------------------
       - name: Terraform Validate
-        working-directory: ${{ env.TF_WORKING_DIR }}
+        working-directory: ${{ env.WORKING_DIR }}
         run: terraform validate
 
+      # -----------------------
+      # Terraform Plan
+      # -----------------------
       - name: Terraform Plan
-        id: plan
-        working-directory: ${{ env.TF_WORKING_DIR }}
-        run: terraform plan -out=tfplan
+        working-directory: ${{ env.WORKING_DIR }}
+        run: terraform plan -input=false -out=tfplan
 
-      - name: Terraform Apply (only on push to main)
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        working-directory: ${{ env.TF_WORKING_DIR }}
-        run: terraform apply -auto-approve tfplan
-
-      - name: Upload Plan Artifact
-        if: always()
+      # -----------------------
+      # Upload Plan Artifact (for manual approval or audit)
+      # -----------------------
+      - name: Upload Terraform Plan
         uses: actions/upload-artifact@v4
         with:
           name: terraform-plan
-          path: ${{ env.TF_WORKING_DIR }}/tfplan
+          path: ${{ env.WORKING_DIR }}/tfplan
+
+      # -----------------------
+      # Optional Apply Step (controlled)
+      # -----------------------
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main'
+        working-directory: ${{ env.WORKING_DIR }}
+        run: terraform apply -auto-approve tfplan

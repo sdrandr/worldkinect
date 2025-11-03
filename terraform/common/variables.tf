@@ -21,7 +21,7 @@ variable "tags" {
 variable "account_id" {
   description = "AWS Account ID for the current environment"
   type        = string
-  default = "us-east-1"
+  default     = "891377181070"
 }
 
 variable "aws_region" {
@@ -40,6 +40,24 @@ variable "env_name" {
   type        = string
   description = "Environment name (dev, staging, prod)"
 }
+
+########################################
+# CI/CD & OIDC Variables
+########################################
+
+variable "enable_github_oidc" {
+  description = "Enable GitHub Actions OIDC trust for Terraform and application IRSA roles."
+  type        = bool
+  default     = false
+}
+
+
+variable "github_repo" {
+  description = "GitHub repository allowed to assume the OIDC role (e.g., sdrandr/worldkinect)."
+  type        = string
+  default     = "sdrandr/worldkinect"
+}
+
 
 variable "db_password_secret_arn" {
   description = "ARN of the Secrets Manager secret storing the DB password"

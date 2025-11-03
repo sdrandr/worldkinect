@@ -127,13 +127,49 @@ resource "kubernetes_service_account" "apollo_router" {
 # IAM ROLE AND POLICY FOR APOLLO ROUTER
 ########################################
 
+# 1️⃣ IRSA Role (with optional GitHub OIDC trust)
 resource "aws_iam_role" "apollo_router_irsa" {
-  provider            = aws.root
-  name                = "${var.name_prefix}-apollo-router-irsa"
-  assume_role_policy  = data.aws_iam_policy_document.irsa_assume_role.json
-  tags                = merge(var.tags, { Component = "apollo-router", ManagedBy = "terraform" })
+  provider = aws.root
+  name     = "${var.name_prefix}-apollo-router-irsa"
+
+  # Base IRSA trust — allows EKS service account to assume the role
+  assume_role_policy = data.aws_iam_policy_document.irsa_assume_role.json
+
+  # Optional GitHub Actions OIDC trust for CI/CD (only if enabled)
+  dynamic "inline_policy" {
+    for_each = var.enable_github_oidc ? [1] : []
+    content {
+      name = "GitHubOIDCTrust"
+      policy = jsonencode({
+        Version = "2012-10-17"
+        Statement = [
+          {
+            Effect = "Allow"
+            Principal = {
+              Federated = "arn:aws:iam::${var.account_id}:oidc-provider/token.actions.githubusercontent.com"
+            }
+            Action = "sts:AssumeRoleWithWebIdentity"
+            Condition = {
+              StringLike = {
+                "token.actions.githubusercontent.com:sub" = "repo:${var.github_repo}:*"
+              }
+              StringEquals = {
+                "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
+              }
+            }
+          }
+        ]
+      })
+    }
+  }
+
+  tags = merge(var.tags, {
+    Component = "apollo-router"
+    ManagedBy = "terraform"
+  })
 }
 
+# 2️⃣ IAM Policy — Permissions for the router
 data "aws_iam_policy_document" "apollo_router_policy" {
   provider = aws.root
 
@@ -157,11 +193,13 @@ resource "aws_iam_policy" "apollo_router_policy" {
   policy   = data.aws_iam_policy_document.apollo_router_policy.json
 }
 
+# 3️⃣ Attach the policy to the role
 resource "aws_iam_role_policy_attachment" "apollo_router_policy_attach" {
   provider   = aws.root
   role       = aws_iam_role.apollo_router_irsa.name
   policy_arn = aws_iam_policy.apollo_router_policy.arn
 }
+
 
 ########################################
 # HELM RELEASE — Apollo Router

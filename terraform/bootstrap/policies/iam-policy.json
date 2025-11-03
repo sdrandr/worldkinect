@@ -2,12 +2,11 @@
   "Version": "2012-10-17",
   "Statement": [
     {
-      "Sid": "BootstrapTerraformAdmin",
+      "Sid": "BootstrapTerraformAdminCore",
       "Effect": "Allow",
       "Action": [
         "s3:*",
         "dynamodb:*",
-        "dynamodb:TagResource",
         "kms:CreateKey",
         "kms:DescribeKey",
         "kms:ListAliases",
@@ -15,12 +14,25 @@
         "kms:TagResource",
         "kms:EnableKeyRotation",
         "iam:CreatePolicy",
-        "iam:PassRole",
+        "iam:CreateRole",
         "iam:GetRole",
         "iam:ListRoles",
+        "iam:PassRole",
+        "iam:AttachRolePolicy",
+        "iam:DetachRolePolicy",
+        "iam:CreateInstanceProfile",
+        "iam:DeleteInstanceProfile",
+        "iam:AddRoleToInstanceProfile",
+        "iam:RemoveRoleFromInstanceProfile",
+        "iam:TagRole",
+        "iam:TagPolicy",
+        "iam:GetPolicy",
         "iam:CreatePolicyVersion",
         "iam:DeletePolicyVersion",
-        "iam:ListPolicies"
+        "iam:ListPolicies",
+        "iam:ListAttachedRolePolicies",
+        "iam:ListRolePolicies",
+        "iam:GetPolicyVersion"
       ],
       "Resource": "*"
     },
@@ -49,59 +61,39 @@
       ]
     },
     {
-      "Sid": "EKSClusterReadAccess",
+      "Sid": "EKSFullLifecycleAccess",
       "Effect": "Allow",
       "Action": [
-        "eks:DescribeCluster",
-        "eks:ListClusters"
-      ],
-      "Resource": "*"
-    },
-    {
-      "Sid": "EKSAndNetworkingAdminAccess",
-      "Effect": "Allow",
-      "Action": [
-        "ec2:*",
         "eks:*",
-        "iam:TagRole",
-        "iam:TagPolicy",
-        "iam:CreateRole",
-        "iam:CreateInstanceProfile",
-        "iam:AttachRolePolicy",
-        "iam:PutRolePolicy",
-        "logs:CreateLogGroup",
-        "logs:DescribeLogGroups",
-        "logs:PutRetentionPolicy"
+        "ec2:*",
+        "iam:PassRole",
+        "logs:*",
+        "autoscaling:*",
+        "elasticloadbalancing:*"
       ],
       "Resource": "*"
     },
     {
-      "Sid": "EKSAdditionalIAMAndLogsAccess",
+      "Sid": "CloudWatchAndTaggingSupport",
       "Effect": "Allow",
       "Action": [
-        "logs:TagResource",
-        "iam:ListRolePolicies",
-        "iam:GetPolicy",
-        "iam:GetRolePolicy",
-        "iam:ListAttachedRolePolicies",
-        "iam:GetPolicyVersion"
+        "cloudwatch:*",
+        "tag:GetResources",
+        "tag:TagResources",
+        "tag:UntagResources"
       ],
       "Resource": "*"
     },
     {
-      "Sid": "EKSFinalReadPermissions",
+      "Sid": "SecretsAndParameterStore",
       "Effect": "Allow",
       "Action": [
-        "iam:ListPolicyVersions",
-        "logs:ListTagsForResource"
-      ],
-      "Resource": "*"
-    },
-    {
-      "Sid": "EKSDeletePolicyPermission",
-      "Effect": "Allow",
-      "Action": [
-        "iam:DeletePolicy"
+        "secretsmanager:GetSecretValue",
+        "secretsmanager:DescribeSecret",
+        "secretsmanager:ListSecrets",
+        "ssm:GetParameter",
+        "ssm:GetParameters",
+        "ssm:GetParametersByPath"
       ],
       "Resource": "*"
     }
