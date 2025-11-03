@@ -1,21 +1,30 @@
 # Terraform
-.terraform/
 *.tfstate
 *.tfstate.*
-crash.log
-*.tfplan
-terraform.tfvars
-*.backup
+.crash
 *.log
+.terraform/
+.terraform.lock.hcl
+terraform.tfvars
+*.tfplan
 
-# macOS
+# Local files
 .DS_Store
+.env
+*.zip
+*.tar.gz
+*.tgz
+*.bak
 
 # Node / Apollo
 node_modules/
 npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# Archives
-*.zip
-*.tgz
-old/
+# IDE
+.vscode/
+.idea/
+
+# Jenkins
+*.jenkinsfile.lock
