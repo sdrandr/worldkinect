@@ -1,0 +1,86 @@
+name: Terraform CI/CD (World Kinect)
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  id-token: write      # 👈 Required for OIDC federation
+  contents: read       # 👈 Needed to clone the repo
+
+env:
+  AWS_REGION: us-east-1
+  TF_VERSION: 1.13.4
+  WORKING_DIR: terraform/environments/dev
+
+jobs:
+  terraform:
+    name: Terraform Plan & Apply
+    runs-on: ubuntu-latest
+
+    steps:
+      # -----------------------
+      # Checkout source code
+      # -----------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # -----------------------
+      # Configure AWS OIDC (no secrets!)
+      # -----------------------
+      - name: Configure AWS credentials from OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::891377181070:role/terraform-admin
+          aws-region: ${{ env.AWS_REGION }}
+
+      # -----------------------
+      # Setup Terraform
+      # -----------------------
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      # -----------------------
+      # Terraform Init
+      # -----------------------
+      - name: Terraform Init
+        working-directory: ${{ env.WORKING_DIR }}
+        run: terraform init -input=false
+
+      # -----------------------
+      # Terraform Validate
+      # -----------------------
+      - name: Terraform Validate
+        working-directory: ${{ env.WORKING_DIR }}
+        run: terraform validate
+
+      # -----------------------
+      # Terraform Plan
+      # -----------------------
+      - name: Terraform Plan
+        working-directory: ${{ env.WORKING_DIR }}
+        run: terraform plan -input=false -out=tfplan
+
+      # -----------------------
+      # Upload Plan Artifact (for manual approval or audit)
+      # -----------------------
+      - name: Upload Terraform Plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-plan
+          path: ${{ env.WORKING_DIR }}/tfplan
+
+      # -----------------------
+      # Optional Apply Step (controlled)
+      # -----------------------
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main'
+        working-directory: ${{ env.WORKING_DIR }}
+        run: terraform apply -auto-approve tfplan

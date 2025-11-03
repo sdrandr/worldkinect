@@ -1,0 +1,100 @@
+name: Terraform Deploy (Dev Ingress)
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  id-token: write          # Required for OIDC federation to AWS
+  contents: read
+
+env:
+  TF_VERSION: 1.13.4
+  AWS_REGION: us-east-1
+  TF_WORKING_DIR: terraform/environments/dev-ingress
+
+jobs:
+  terraform-dev-ingress:
+    name: Deploy Dev Ingress (ALB + Route53 + ACM)
+    runs-on: ubuntu-latest
+
+    steps:
+      # ------------------------------
+      # 1️⃣ Checkout repository
+      # ------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ------------------------------
+      # 2️⃣ Setup Terraform
+      # ------------------------------
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      # ------------------------------
+      # 3️⃣ Configure AWS credentials (OIDC)
+      # ------------------------------
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::891377181070:role/terraform-admin
+          aws-region: ${{ env.AWS_REGION }}
+
+      # ------------------------------
+      # 4️⃣ Terraform Init
+      # ------------------------------
+      - name: Terraform Init
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform init -input=false
+
+      # ------------------------------
+      # 5️⃣ Terraform Validate
+      # ------------------------------
+      - name: Terraform Validate
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform validate
+
+      # ------------------------------
+      # 6️⃣ Terraform Plan
+      # ------------------------------
+      - name: Terraform Plan
+        id: plan
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform plan -input=false -out=tfplan
+
+      # ------------------------------
+      # 7️⃣ Terraform Apply (Main Branch Only)
+      # ------------------------------
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main'
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform apply -input=false -auto-approve tfplan
+
+      # ------------------------------
+      # 8️⃣ Show Outputs (Ingress URL, ALB DNS, ACM Cert)
+      # ------------------------------
+      - name: Show Ingress Outputs
+        if: github.ref == 'refs/heads/main'
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: |
+          echo "=========================================="
+          echo "Ingress Outputs for Dev Environment"
+          echo "=========================================="
+
+          echo "🔹 Apollo Router Ingress URL:"
+          terraform output -raw apollo_router_ingress_url || echo "No ingress URL found."
+
+          echo "🔹 ALB DNS Name:"
+          terraform output -raw apollo_router_alb_dns_name || echo "No ALB DNS found."
+
+          echo "🔹 ACM Certificate ARN:"
+          terraform output -raw apollo_router_acm_certificate_arn || echo "No ACM certificate found."
+
+          echo "✅ Ingress deployment complete."
