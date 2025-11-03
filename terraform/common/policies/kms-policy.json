@@ -1,0 +1,89 @@
+{
+  "Version": "2012-10-17",
+  "Id": "kms-policy-enterprise",
+  "Statement": [
+    {
+      "Sid": "AllowRootAccountFullAccess",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::${account_id}:root"
+      },
+      "Action": "kms:*",
+      "Resource": "*"
+    },
+    {
+      "Sid": "AllowTerraformAdmin",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::${account_id}:user/terraform-admin"
+      },
+      "Action": [
+        "kms:DescribeKey",
+        "kms:Encrypt",
+        "kms:Decrypt",
+        "kms:GenerateDataKey*",
+        "kms:CreateAlias",
+        "kms:TagResource",
+        "kms:ScheduleKeyDeletion",
+        "kms:EnableKeyRotation"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "AllowSecretsManager",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "secretsmanager.amazonaws.com"
+      },
+      "Action": [
+        "kms:Encrypt",
+        "kms:Decrypt",
+        "kms:GenerateDataKey*",
+        "kms:DescribeKey"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "AllowTerraformBackendServices",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": [
+          "s3.amazonaws.com",
+          "dynamodb.amazonaws.com"
+        ]
+      },
+      "Action": [
+        "kms:Encrypt",
+        "kms:Decrypt",
+        "kms:GenerateDataKey*",
+        "kms:DescribeKey"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "AllowEcsExecutionRole",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::${account_id}:role/ecs-exec-role"
+      },
+      "Action": [
+        "kms:Decrypt",
+        "kms:DescribeKey"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "AllowDelegatedUser1",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::${account_id}:user/sdrandrUser1"
+      },
+      "Action": [
+        "kms:DescribeKey",
+        "kms:Decrypt",
+        "kms:GenerateDataKey*"
+      ],
+      "Resource": "*"
+    }
+  ]
+}

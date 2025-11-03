@@ -1,0 +1,5 @@
+{
+  "name": "apollo-energy-api",
+  "dependencies": { 
+    "apollo-server": "^3.13.0", "graphql": "^15.8.0", "pg": "^8.11.0" }
+}

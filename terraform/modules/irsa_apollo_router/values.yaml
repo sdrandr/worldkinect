@@ -1,0 +1,76 @@
+########################################
+# values.yaml - Apollo Router Helm values
+########################################
+
+router:
+  config:
+    supergraph:
+      path: /etc/config/supergraph.graphql
+
+    telemetry:
+      exporters:
+        stdout:
+          enabled: false
+      metrics:
+        prometheus:
+          enabled: true
+
+    cors:
+      origins:
+        - "*"
+
+    apq:
+      enabled: true
+
+  args:
+    - "--supergraph"
+    - "/etc/config/supergraph.graphql"
+
+  env:
+    - name: BOX_TOKEN_SECRET_ARN
+      value: ${irsa_role_arn}
+    - name: AWS_REGION
+      value: ${region}
+    - name: OIDC_JWT_ISSUER
+      value: ${oidc_jwt_issuer}
+    - name: OIDC_AUDIENCE
+      value: ${oidc_audience}
+
+extraVolumes:
+  - name: supergraph
+    configMap:
+      name: apollo-supergraph
+
+extraVolumeMounts:
+  - name: supergraph
+    mountPath: /etc/config
+    readOnly: true
+
+livenessProbe:
+  httpGet:
+    path: /health
+    port: 8080
+  initialDelaySeconds: 15
+  periodSeconds: 10
+
+readinessProbe:
+  httpGet:
+    path: /health
+    port: 8080
+  initialDelaySeconds: 20
+  periodSeconds: 10
+
+serviceAccount:
+  create: true
+  name: apollo-router
+  annotations:
+    eks.amazonaws.com/role-arn: ${irsa_role_arn}
+
+namespaceOverride: ${namespace}
+
+service:
+  type: ClusterIP
+  port: 8080
+
+ingress:
+  enabled: false

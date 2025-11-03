@@ -1,0 +1,12 @@
+########################################
+# backend.tfvars.template
+# Template for environment-specific backend configuration
+########################################
+
+bucket         = "kinect-<ENV>-terraform-state"
+key            = "env/<ENV>/terraform.tfstate"
+region         = "us-east-1"
+dynamodb_table = "kinect-terraform-locks"
+encrypt        = true
+profile        = "terraform-admin"
+kms_key_id     = "<KMS_KEY_ARN>"   # Replace with actual bootstrap KMS ARN

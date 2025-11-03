@@ -1,0 +1,40 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "BootstrapPermissions",
+      "Effect": "Allow",
+      "Action": [
+        "iam:CreatePolicy",
+        "iam:CreatePolicyVersion",
+        "iam:DeletePolicyVersion",
+        "iam:ListPolicies",
+        "iam:GetPolicy",
+        "iam:GetPolicyVersion",
+        "iam:AttachUserPolicy",
+        "dynamodb:CreateTable",
+        "dynamodb:DescribeTable",
+        "dynamodb:PutItem",
+        "dynamodb:GetItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:DescribeContinuousBackups",
+        "dynamodb:DescribeTimeToLive",
+        "dynamodb:ListTagsOfResource",
+        "dynamodb:DeleteTable",
+        "dynamodb:UpdateTimeToLive",
+        "dynamodb:TagResource",
+        "kms:CreateKey",
+        "kms:DescribeKey",
+        "kms:GetKeyRotationStatus",
+        "kms:ListKeys",
+        "kms:CreateAlias",
+        "kms:ListAliases",
+        "kms:UpdateAlias",
+        "kms:ListResourceTags",
+        "kms:EnableKeyRotation",
+        "kms:TagResource"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
