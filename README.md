@@ -1,4 +1,4 @@
-# 🚀 WorldKinect Accounts API
+# 🚀 SDRANDR mock Wk Accounts API
 
 GraphQL subgraph service for accounts management, deployed on AWS EKS with Apollo Federation.
 
