@@ -1,0 +1,163 @@
+1. confirm in ~/worldkinect dir
+2. chmod +x ./scripts/setup-iam-permissions.sh
+3. changed eks cluster paramater name to existing eks cluster name to "wk-dev-eks"
+4. ./scripts/setup-iam-permissions.sh
+-  output below from lines 7-160. - next step is on line 162
+-- info /Users/dbmpro2/worldkinect/.aws-credentials-accounts-api-cicd.txt
+-- Begin Output
+dbmpro2@Denniss-MacBook-Pro:~/worldkinect$ ./scripts/setup-iam-permissions.sh 
+============================================================
+ IAM Setup - Accounts API EKS Deployment
+============================================================
+
+Configuration:
+  AWS_REGION      = us-east-1
+  AWS_ACCOUNT_ID  = 891377181070
+  EKS_CLUSTER     = wk-dev-eks
+
+>>> [1/5] Creating IAM policy for CI/CD deployment...
+Policy exists, creating new version...
+PolicyVersion:
+  CreateDate: '2025-11-04T22:04:34+00:00'
+  IsDefaultVersion: true
+  VersionId: v2
+✓ CI/CD policy created: arn:aws:iam::891377181070:policy/AccountsAPI-CICD-Policy
+
+>>> [2/5] Creating IAM user for CI/CD...
+User accounts-api-cicd already exists
+✓ User created and policy attached
+
+>>> [3/5] Creating access keys...
+⚠️  User already has access keys:
+AKIA47CRYMGHFW62E2X4
+If you need new keys, delete existing ones first:
+  aws iam delete-access-key --user-name accounts-api-cicd --access-key-id <KEY_ID>
+
+>>> [4/5] Creating IAM role for EKS service account...
+OIDC Provider: oidc.eks.us-east-1.amazonaws.com/id/5E1A43B110CF5A0B638588F2C1A9D415
+Creating role AccountsAPI-EKS-ServiceAccount-Role...
+Role:
+  Arn: arn:aws:iam::891377181070:role/AccountsAPI-EKS-ServiceAccount-Role
+  AssumeRolePolicyDocument:
+    Statement:
+    - Action: sts:AssumeRoleWithWebIdentity
+      Condition:
+        StringEquals:
+          oidc.eks.us-east-1.amazonaws.com/id/5E1A43B110CF5A0B638588F2C1A9D415:aud: sts.amazonaws.com
+          oidc.eks.us-east-1.amazonaws.com/id/5E1A43B110CF5A0B638588F2C1A9D415:sub: system:serviceaccount:default:accounts-api
+      Effect: Allow
+      Principal:
+        Federated: arn:aws:iam::891377181070:oidc-provider/oidc.eks.us-east-1.amazonaws.com/id/5E1A43B110CF5A0B638588F2C1A9D415
+    Version: '2012-10-17'
+  CreateDate: '2025-11-04T22:04:41+00:00'
+  Path: /
+:...skipping...
+Role:
+  Arn: arn:aws:iam::891377181070:role/AccountsAPI-EKS-ServiceAccount-Role
+  AssumeRolePolicyDocument:
+    Statement:
+    - Action: sts:AssumeRoleWithWebIdentity
+      Condition:
+        StringEquals:
+          oidc.eks.us-east-1.amazonaws.com/id/5E1A43B110CF5A0B638588F2C1A9D415:aud: sts.amazonaws.com
+          oidc.eks.us-east-1.amazonaws.com/id/5E1A43B110CF5A0B638588F2C1A9D415:sub: system:serviceaccount:default:accounts-api
+      Effect: Allow
+      Principal:
+        Federated: arn:aws:iam::891377181070:oidc-provider/oidc.eks.us-east-1.amazonaws.com/id/5E1A43B110CF5A0B638588F2C1A9D415
+    Version: '2012-10-17'
+  CreateDate: '2025-11-04T22:04:41+00:00'
+  Path: /
+  RoleId: AROA47CRYMGHA54GIICUY
+:...skipping...
+Role:
+  Arn: arn:aws:iam::891377181070:role/AccountsAPI-EKS-ServiceAccount-Role
+  AssumeRolePolicyDocument:
+    Statement:
+    - Action: sts:AssumeRoleWithWebIdentity
+      Condition:
+        StringEquals:
+          oidc.eks.us-east-1.amazonaws.com/id/5E1A43B110CF5A0B638588F2C1A9D415:aud: sts.amazonaws.com
+          oidc.eks.us-east-1.amazonaws.com/id/5E1A43B110CF5A0B638588F2C1A9D415:sub: system:serviceaccount:default:accounts-api
+      Effect: Allow
+      Principal:
+        Federated: arn:aws:iam::891377181070:oidc-provider/oidc.eks.us-east-1.amazonaws.com/id/5E1A43B110CF5A0B638588F2C1A9D415
+    Version: '2012-10-17'
+  CreateDate: '2025-11-04T22:04:41+00:00'
+  Path: /
+  RoleId: AROA47CRYMGHA54GIICUY
+  RoleName: AccountsAPI-EKS-ServiceAccount-Role
+  Tags:
+  - Key: Service
+:...skipping...
+Role:
+  Arn: arn:aws:iam::891377181070:role/AccountsAPI-EKS-ServiceAccount-Role
+  AssumeRolePolicyDocument:
+    Statement:
+    - Action: sts:AssumeRoleWithWebIdentity
+      Condition:
+        StringEquals:
+          oidc.eks.us-east-1.amazonaws.com/id/5E1A43B110CF5A0B638588F2C1A9D415:aud: sts.amazonaws.com
+          oidc.eks.us-east-1.amazonaws.com/id/5E1A43B110CF5A0B638588F2C1A9D415:sub: system:serviceaccount:default:accounts-api
+      Effect: Allow
+      Principal:
+        Federated: arn:aws:iam::891377181070:oidc-provider/oidc.eks.us-east-1.amazonaws.com/id/5E1A43B110CF5A0B638588F2C1A9D415
+    Version: '2012-10-17'
+  CreateDate: '2025-11-04T22:04:41+00:00'
+  Path: /
+  RoleId: AROA47CRYMGHA54GIICUY
+  RoleName: AccountsAPI-EKS-ServiceAccount-Role
+  Tags:
+  - Key: Service
+    Value: accounts-api
+  - Key: Cluster
+    Value: wk-dev-eks
+:...skipping...
+Role:
+  Arn: arn:aws:iam::891377181070:role/AccountsAPI-EKS-ServiceAccount-Role
+  AssumeRolePolicyDocument:
+    Statement:
+    - Action: sts:AssumeRoleWithWebIdentity
+      Condition:
+        StringEquals:
+          oidc.eks.us-east-1.amazonaws.com/id/5E1A43B110CF5A0B638588F2C1A9D415:aud: sts.amazonaws.com
+          oidc.eks.us-east-1.amazonaws.com/id/5E1A43B110CF5A0B638588F2C1A9D415:sub: system:serviceaccount:default:accounts-api
+      Effect: Allow
+      Principal:
+        Federated: arn:aws:iam::891377181070:oidc-provider/oidc.eks.us-east-1.amazonaws.com/id/5E1A43B110CF5A0B638588F2C1A9D415
+    Version: '2012-10-17'
+  CreateDate: '2025-11-04T22:04:41+00:00'
+  Path: /
+  RoleId: AROA47CRYMGHA54GIICUY
+  RoleName: AccountsAPI-EKS-ServiceAccount-Role
+  Tags:
+  - Key: Service
+    Value: accounts-api
+  - Key: Cluster
+    Value: wk-dev-eks
+~
+✓ Service account role created: arn:aws:iam::891377181070:role/AccountsAPI-EKS-ServiceAccount-Role
+
+>>> [5/5] Creating Kubernetes service account...
+✓ Kubernetes service account manifest created
+
+============================================================
+✓ IAM Setup Complete!
+============================================================
+
+Created Resources:
+
+1. IAM Policy:
+   Name: AccountsAPI-CICD-Policy
+   ARN:  arn:aws:iam::891377181070:policy/AccountsAPI-CICD-Policy
+
+2. IAM User (for CI/CD):
+   Name: accounts-api-cicd
+   Credentials saved to: N/A
+
+3. IAM Role (for EKS pods):
+   Name: AccountsAPI-EKS-ServiceAccount-Role
+   ARN:  arn:aws:iam::891377181070:role/AccountsAPI-EKS-ServiceAccount-Role
+
+4. Kubernetes ServiceAccount:
+   File: services/accounts-api/kubernetes/serviceaccount.yaml
+--End Output
