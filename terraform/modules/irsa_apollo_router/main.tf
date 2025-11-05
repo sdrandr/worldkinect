@@ -1,6 +1,6 @@
 ########################################
-# IRSA Apollo Router Module — NIST / Enterprise Ready
-# Terraform 1.13.4 | AWS Provider 5.x | K8s Provider 2.x | Helm Provider 2.x
+# Apollo Router Module (IRSA + Ingress)
+# Terraform 1.13.x | AWS Provider 5.x | K8s Provider 2.x | Helm Provider 2.x
 ########################################
 
 terraform {
@@ -10,8 +10,6 @@ terraform {
     aws = {
       source  = "hashicorp/aws"
       version = ">= 5.30.0, < 6.0.0"
-
-      # Accept aliased provider (aws.root) passed from root
       configuration_aliases = [aws.root]
     }
 
@@ -36,7 +34,7 @@ terraform {
 }
 
 ########################################
-# EKS CLUSTER DATA SOURCES
+# EKS Cluster Data
 ########################################
 
 data "aws_eks_cluster" "this" {
@@ -50,7 +48,7 @@ data "aws_eks_cluster_auth" "this" {
 }
 
 ########################################
-# IRSA TRUST POLICY (OIDC → IAM)
+# IRSA Trust Policy (EKS OIDC)
 ########################################
 
 data "aws_iam_policy_document" "irsa_assume_role" {
@@ -58,14 +56,11 @@ data "aws_iam_policy_document" "irsa_assume_role" {
 
   statement {
     effect = "Allow"
-
     principals {
       type        = "Federated"
       identifiers = [var.oidc_provider_arn]
     }
-
     actions = ["sts:AssumeRoleWithWebIdentity"]
-
     condition {
       test     = "StringLike"
       variable = "${var.oidc_provider_issuer}:sub"
@@ -75,13 +70,11 @@ data "aws_iam_policy_document" "irsa_assume_role" {
 }
 
 ########################################
-# DOWNLOAD AND LOAD SUPERGRAPH FILE
+# Download Supergraph File
 ########################################
 
 resource "null_resource" "download_supergraph" {
-  triggers = {
-    always = timestamp()
-  }
+  triggers = { always = timestamp() }
 
   provisioner "local-exec" {
     command = "curl -sSL https://supergraph.demo.starstuff.dev/ -o ${path.module}/supergraph.graphql"
@@ -94,10 +87,21 @@ data "local_file" "supergraph" {
 }
 
 ########################################
-# KUBERNETES CONFIGMAP (Supergraph)
+# Namespace + ConfigMap
 ########################################
 
+resource "kubernetes_namespace" "apollo_system" {
+  metadata {
+    name = var.namespace
+    labels = {
+      "app.kubernetes.io/managed-by" = "terraform"
+    }
+  }
+}
+
 resource "kubernetes_config_map" "apollo_supergraph" {
+  depends_on = [kubernetes_namespace.apollo_system]
+
   metadata {
     name      = "apollo-supergraph"
     namespace = var.namespace
@@ -109,33 +113,15 @@ resource "kubernetes_config_map" "apollo_supergraph" {
 }
 
 ########################################
-# KUBERNETES SERVICE ACCOUNT (IRSA)
+# IAM Role + Policy for Router
 ########################################
 
-resource "kubernetes_service_account" "apollo_router" {
-  metadata {
-    name      = var.service_account_name
-    namespace = var.namespace
-
-    annotations = {
-      "eks.amazonaws.com/role-arn" = aws_iam_role.apollo_router_irsa.arn
-    }
-  }
-}
-
-########################################
-# IAM ROLE AND POLICY FOR APOLLO ROUTER
-########################################
-
-# 1️⃣ IRSA Role (with optional GitHub OIDC trust)
 resource "aws_iam_role" "apollo_router_irsa" {
   provider = aws.root
   name     = "${var.name_prefix}-apollo-router-irsa"
 
-  # Base IRSA trust — allows EKS service account to assume the role
   assume_role_policy = data.aws_iam_policy_document.irsa_assume_role.json
 
-  # Optional GitHub Actions OIDC trust for CI/CD (only if enabled)
   dynamic "inline_policy" {
     for_each = var.enable_github_oidc ? [1] : []
     content {
@@ -169,13 +155,12 @@ resource "aws_iam_role" "apollo_router_irsa" {
   })
 }
 
-# 2️⃣ IAM Policy — Permissions for the router
 data "aws_iam_policy_document" "apollo_router_policy" {
   provider = aws.root
 
   statement {
-    sid     = "SecretsAndKMSAccess"
-    effect  = "Allow"
+    sid    = "SecretsAndKMSAccess"
+    effect = "Allow"
     actions = [
       "secretsmanager:GetSecretValue",
       "kms:Decrypt",
@@ -193,16 +178,14 @@ resource "aws_iam_policy" "apollo_router_policy" {
   policy   = data.aws_iam_policy_document.apollo_router_policy.json
 }
 
-# 3️⃣ Attach the policy to the role
 resource "aws_iam_role_policy_attachment" "apollo_router_policy_attach" {
   provider   = aws.root
   role       = aws_iam_role.apollo_router_irsa.name
   policy_arn = aws_iam_policy.apollo_router_policy.arn
 }
 
-
 ########################################
-# HELM RELEASE — Apollo Router
+# Helm Release: Apollo Router
 ########################################
 
 resource "helm_release" "apollo_router" {
@@ -230,23 +213,51 @@ resource "helm_release" "apollo_router" {
     })
   ]
 
+  set {
+    name  = "serviceAccount.create"
+    value = true
+  }
+
+  set {
+    name  = "serviceAccount.name"
+    value = var.service_account_name
+  }
+
   depends_on = [
     kubernetes_config_map.apollo_supergraph,
-    kubernetes_service_account.apollo_router,
     aws_iam_role_policy_attachment.apollo_router_policy_attach
   ]
 }
 
 ########################################
-# OUTPUTS
+# Ingress (AWS ALB + Route53 + ACM)
+########################################
+
+module "ingress" {
+  source = "../ingress"
+
+  namespace       = var.namespace
+  service_name    = "${var.name_prefix}-apollo-router"
+  service_port    = 8080
+  domain_name     = "router.dev.${var.domain}"
+  route53_zone_id = var.route53_zone_id
+  aws_region      = var.aws_region
+  name_prefix     = var.name_prefix
+  environment     = var.env_name
+
+  depends_on = [helm_release.apollo_router]
+}
+
+########################################
+# Outputs
 ########################################
 
 output "apollo_router_irsa_role_arn" {
-  value       = aws_iam_role.apollo_router_irsa.arn
   description = "IAM Role ARN used by Apollo Router via IRSA"
+  value       = aws_iam_role.apollo_router_irsa.arn
 }
 
 output "router_url" {
-  value       = "https://router.${var.domain}"
-  description = "Base URL for Apollo Router"
+  description = "Base URL for Apollo Router ingress endpoint"
+  value       = module.ingress.router_url
 }

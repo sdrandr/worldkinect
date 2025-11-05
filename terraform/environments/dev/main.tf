@@ -61,6 +61,15 @@ provider "kubernetes" {
   token                  = data.aws_eks_cluster_auth.this.token
 }
 
+provider "helm" {
+  kubernetes {
+    host                   = module.eks.cluster_endpoint
+    cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
+    token                  = data.aws_eks_cluster_auth.this.token
+  }
+}
+
+
 ########################################
 # 1. NETWORKING (uses aws.root)
 ########################################
@@ -106,7 +115,7 @@ module "eks" {
   cluster_endpoint_private_access      = true
   cluster_endpoint_public_access_cidrs = ["${chomp(data.http.my_ip.response_body)}/32"]
 
-  enable_irsa                            = true
+  enable_irsa                              = true
   enable_cluster_creator_admin_permissions = true
 
   eks_managed_node_groups = {
@@ -135,17 +144,17 @@ module "eks" {
 ########################################
 
 #resource "aws_security_group_rule" "eks_api_ingress_from_nodes" {
- # description              = "Allow EKS nodes to talk to cluster API on 443"
- # type                     = "ingress"
- # from_port                = 443
- # to_port                  = 443
- # protocol                 = "tcp"
+# description              = "Allow EKS nodes to talk to cluster API on 443"
+# type                     = "ingress"
+# from_port                = 443
+# to_port                  = 443
+# protocol                 = "tcp"
 
-  # Source = Node group security group
- # source_security_group_id = module.eks.node_security_group_id
+# Source = Node group security group
+# source_security_group_id = module.eks.node_security_group_id
 
-  # Target = Cluster security group
- # security_group_id        = module.eks.cluster_security_group_id
+# Target = Cluster security group
+# security_group_id        = module.eks.cluster_security_group_id
 #}
 
 ########################################
@@ -175,23 +184,23 @@ module "irsa_apollo_router" {
     helm       = helm
   }
 
-  eks_cluster_name         = module.eks.cluster_name
-  cluster_endpoint         = module.eks.cluster_endpoint
-  cluster_ca_certificate   = module.eks.cluster_certificate_authority_data
-  token                    = data.aws_eks_cluster_auth.this.token
+  eks_cluster_name       = module.eks.cluster_name
+  cluster_endpoint       = module.eks.cluster_endpoint
+  cluster_ca_certificate = module.eks.cluster_certificate_authority_data
+  token                  = data.aws_eks_cluster_auth.this.token
 
-  aws_region          = var.aws_region
-  oidc_provider_arn   = module.eks.oidc_provider_arn
+  aws_region           = var.aws_region
+  oidc_provider_arn    = module.eks.oidc_provider_arn
   oidc_provider_issuer = module.eks.cluster_oidc_issuer_url
 
   namespace            = "apollo-system"
   service_account_name = "apollo-router"
   name_prefix          = "wk-dev"
-  domain               = "dev.worldkinect.local"
+  domain               = "dev.sdrandr.local"
 
-  subgraphs        = ["content", "auth", "user"]
-  oidc_jwt_issuer  = "https://dev.worldkinect.local"
-  oidc_audience    = "apollo-router"
+  subgraphs       = ["content", "auth", "user"]
+  oidc_jwt_issuer = "https://dev.sdrandr.local"
+  oidc_audience   = "apollo-router"
 
   tags = merge(var.tags, {
     Component  = "apollo-router"
@@ -199,6 +208,19 @@ module "irsa_apollo_router" {
     DataClass  = "internal"
   })
 }
+
+# 4.b. INGRESS FOR APOLLO ROUTER
+module "ingress" {
+  source = "../../modules/ingress"
+
+  namespace          = "apollo-system"
+  service_name       = "wk-dev-apollo-router"
+  service_port       = 8080
+  domain_name        = "router.dev.sdrandr.local"
+  route53_zone_id    = var.route53_zone_id
+  aws_region         = var.aws_region
+}
+
 
 ########################################
 # 5. SECRETS

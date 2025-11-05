@@ -28,3 +28,7 @@ yarn-error.log*
 
 # Jenkins
 *.jenkinsfile.lock
+
+# Documentation build artifacts
+docs/site/
+mkdocs.yml
