@@ -110,4 +110,54 @@ aws eks describe-cluster --name worldkinect-dev
 
 ---
 
-[Add more troubleshooting scenarios]
+### Issue: Terraform State Locked
+
+**Symptom:** Terraform operations fail with "state is locked"
+
+**Solution:**
+```bash
+# Check for existing locks
+aws dynamodb scan --table-name terraform-locks
+
+# Force unlock (use carefully!)
+terraform force-unlock <lock-id>
+```
+
+---
+
+### Issue: Docker Build Slow
+
+**Symptom:** Docker builds take too long
+
+**Solution:**
+```bash
+# Use BuildKit for faster builds
+export DOCKER_BUILDKIT=1
+docker build -t accounts-api:latest .
+
+# Use build cache
+docker build --cache-from accounts-api:latest -t accounts-api:latest .
+```
+
+---
+
+### Issue: Node Modules Issues
+
+**Symptom:** Dependencies not installing correctly
+
+**Solution:**
+```bash
+# Clear npm cache
+npm cache clean --force
+
+# Remove and reinstall
+rm -rf node_modules package-lock.json
+npm install
+```
+
+---
+
+For more troubleshooting help, see:
+- [AWS EKS Troubleshooting Guide](https://docs.aws.amazon.com/eks/latest/userguide/troubleshooting.html)
+- [Kubernetes Debugging Guide](https://kubernetes.io/docs/tasks/debug/)
+- [Apollo Server Troubleshooting](https://www.apollographql.com/docs/apollo-server/troubleshooting/)

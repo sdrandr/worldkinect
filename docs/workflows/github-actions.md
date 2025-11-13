@@ -30,4 +30,48 @@ See `.github/workflows/deploy-accounts-api.yml` for full configuration.
 
 ---
 
-[Add more GitHub Actions details]
+## Monitoring Workflow Runs
+
+### View Workflow Status
+
+1. Go to GitHub repository
+2. Click **Actions** tab
+3. View workflow runs and logs
+
+### Failed Workflow
+
+If a workflow fails:
+
+1. Click on the failed workflow run
+2. Expand the failed job/step
+3. Review error logs
+4. Fix the issue
+5. Re-run the workflow
+
+### Manual Trigger
+
+To manually trigger a workflow:
+
+1. Go to **Actions** tab
+2. Select **Deploy Accounts API to EKS** workflow
+3. Click **Run workflow**
+4. Select branch and environment
+5. Click **Run workflow** button
+
+---
+
+## Workflow Badges
+
+Add a status badge to your README:
+
+```markdown
+![Deploy Status](https://github.com/<your-org>/<your-repo>/actions/workflows/deploy-accounts-api.yml/badge.svg)
+```
+
+---
+
+## Resources
+
+- [GitHub Actions Documentation](https://docs.github.com/en/actions)
+- [AWS Actions for GitHub](https://github.com/aws-actions)
+- [Workflow Syntax](https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions)

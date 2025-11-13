@@ -13,8 +13,9 @@ GraphQL subgraph service for accounts management, deployed on AWS EKS with Apoll
 - **[Getting Started Guide](docs/guides/01-iam-setup.md)** - Set up IAM and permissions
 - **[Two-Account Setup](docs/guides/02-two-account-setup.md)** - Managing admin and working accounts
 - **[EKS Migration Guide](docs/guides/03-eks-migration.md)** - Migrate from Lambda to EKS
+- **[Local Development](docs/guides/04-local-development.md)** - Running the service locally
 - **[CI/CD Automation](docs/guides/05-cicd-automation.md)** - Automated deployments
-- **[Quick Reference](docs/reference/quick-reference.md)** - Common commands cheat sheet
+- **[Quick Reference](docs/references/quick-reference.md)** - Common commands cheat sheet
 
 ---
 
@@ -161,7 +162,7 @@ kubectl logs -l app=accounts-api -f
 kubectl rollout undo deployment/accounts-api
 ```
 
-See [Quick Reference](docs/reference/quick-reference.md) for more commands.
+See [Quick Reference](docs/references/quick-reference.md) for more commands.
 
 ---
 
@@ -220,8 +221,8 @@ kubectl port-forward svc/accounts-api 4000:4000
 ## 🐛 Troubleshooting
 
 Common issues and solutions are documented in:
-- [Troubleshooting Guide](docs/reference/troubleshooting.md)
-- [Quick Reference](docs/reference/quick-reference.md)
+- [Troubleshooting Guide](docs/references/troubleshooting.md)
+- [Quick Reference](docs/references/quick-reference.md)
 
 **Quick diagnostics:**
 ```bash

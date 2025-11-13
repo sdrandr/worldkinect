@@ -157,4 +157,75 @@ EKS_CLUSTER_NAME=worldkinect-staging \
 
 ---
 
-[Add more script details as needed]
+## Script Best Practices
+
+### Always Verify Environment
+
+```bash
+# Check AWS identity before running scripts
+aws sts get-caller-identity
+
+# Verify kubectl context
+kubectl config current-context
+```
+
+### Use Environment Variables
+
+```bash
+# Set variables before running scripts
+export ENVIRONMENT=dev
+export AWS_REGION=us-east-1
+
+./scripts/ci-cd-pipeline.sh
+```
+
+### Error Handling
+
+All scripts use:
+- `set -euo pipefail` - Exit on error
+- Error messages with context
+- Cleanup on failure
+
+### Dry Run Mode
+
+Use `--dry-run` to test without making changes:
+
+```bash
+./scripts/ci-cd-pipeline.sh --dry-run
+```
+
+---
+
+## Troubleshooting Scripts
+
+### Script Permission Denied
+
+```bash
+# Make scripts executable
+chmod +x scripts/*.sh
+```
+
+### Script Not Found
+
+```bash
+# Run from project root
+cd ~/worldkinect
+./scripts/build-and-push.sh
+```
+
+### AWS Credentials Issues
+
+```bash
+# Verify AWS credentials
+aws sts get-caller-identity
+
+# Check AWS profile
+echo $AWS_PROFILE
+```
+
+---
+
+## Resources
+
+- [Bash Scripting Guide](https://www.gnu.org/software/bash/manual/bash.html)
+- [Shell Script Best Practices](https://google.github.io/styleguide/shellguide.html)
