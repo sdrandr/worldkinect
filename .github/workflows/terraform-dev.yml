@@ -1,13 +1,7 @@
 name: Terraform CI/CD (World Kinect)
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
-  workflow_dispatch:
+  workflow_dispatch:  # Manual trigger only - won't run automatically
 
 permissions:
   id-token: write      # 👈 Required for OIDC federation
