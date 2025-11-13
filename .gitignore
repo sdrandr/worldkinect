@@ -10,11 +10,17 @@ terraform.tfvars
 
 # Local files
 .DS_Store
+**/.DS_Store
 .env
+.env.local
+.env.*.local
 *.zip
 *.tar.gz
 *.tgz
 *.bak
+.tmp/
+build/
+dist/
 
 # Node / Apollo
 node_modules/
@@ -33,6 +39,5 @@ yarn-error.log*
 docs/site/
 mkdocs.yml
 
+# AWS credentials
 .aws-credentials-accounts-api-cicd.txt
-
-.tmp/
